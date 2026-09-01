@@ -214,7 +214,7 @@ export function Sidebar({
 
   const sidebarContent = (
     <div
-      className={`relative flex flex-col h-full bg-white dark:bg-stone-800 transition-all duration-200 ${state.collapsed ? 'w-14' : ''}`}
+      className={`relative flex flex-col h-full bg-white dark:bg-stone-900 transition-all duration-200 ${state.collapsed ? 'w-14' : ''}`}
       style={{ width: state.collapsed ? 56 : state.width }}
     >
       {/* Workspace switcher */}
