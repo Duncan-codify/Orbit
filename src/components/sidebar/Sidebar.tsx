@@ -450,7 +450,7 @@ export function Sidebar({
             <Menu className="w-5 h-5 text-stone-600 dark:text-stone-400" />
           </button>
           <div
-            className={`fixed top-0 left-0 bottom-0 z-40 shadow-2xl transition-transform duration-200 ${
+            className={`fixed top-12 left-0 bottom-0 z-40 shadow-2xl transition-transform duration-200 ${
               hovered ? 'translate-x-0' : '-translate-x-full'
             }`}
           >
