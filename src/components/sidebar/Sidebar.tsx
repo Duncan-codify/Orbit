@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { PanelLeftClose, PanelLeftOpen, Plus } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Plus, Menu } from 'lucide-react';
 import type { Block, Workspace } from '../../lib/supabase';
 import { useSidebarStore } from './useSidebarStore';
 import { applyTheme } from './ThemeToggle';
@@ -37,11 +37,18 @@ export function Sidebar({
   onDeleteBlock,
   onRefetch,
 }: SidebarProps) {
-  const { state, setWidth, toggleCollapsed, toggleSection, togglePageExpand, setTheme, addRecent, toggleFavorite } = useSidebarStore();
+  const { state, setWidth, toggleCollapsed, setCollapsed, toggleSection, togglePageExpand, setTheme, addRecent, toggleFavorite } = useSidebarStore();
   const [contextMenu, setContextMenu] = useState<{ pageId: string; pos: { top: number; left: number } } | null>(null);
   const [addMenu, setAddMenu] = useState<{ pos: { top: number; left: number } } | null>(null);
   const [iconPickerFor, setIconPickerFor] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
+
+  const effectiveCollapsed = state.collapsed && !hovered;
+
+  useEffect(() => {
+    if (!state.collapsed) setHovered(false);
+  }, [state.collapsed]);
 
   // DnD state
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -214,37 +221,37 @@ export function Sidebar({
 
   const sidebarContent = (
     <div
-      className={`relative flex flex-col h-full bg-white dark:bg-stone-900 transition-all duration-200 ${state.collapsed ? 'w-14' : ''}`}
-      style={{ width: state.collapsed ? 56 : state.width }}
+      className={`relative flex flex-col h-full bg-white dark:bg-stone-900 transition-all duration-200 ${effectiveCollapsed ? 'w-14' : ''}`}
+      style={{ width: effectiveCollapsed ? 56 : state.width }}
     >
       {/* Workspace switcher */}
       <WorkspaceSwitcher
         workspaces={workspaces}
         activeId={activeWorkspaceId}
         onSelect={onSwitchWorkspace}
-        collapsed={state.collapsed}
+        collapsed={effectiveCollapsed}
       />
 
       {/* Search */}
       <SearchBar
         blocks={blocks}
         onSelect={onSelectPage}
-        collapsed={state.collapsed}
+        collapsed={effectiveCollapsed}
       />
 
       {/* Collapse toggle (top-right) */}
       <button
         onClick={toggleCollapsed}
         className="absolute top-2.5 right-2 p-1 rounded-md hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-400 transition-colors"
-        title={state.collapsed ? 'Expand' : 'Collapse'}
+        title={effectiveCollapsed ? 'Expand' : 'Collapse'}
       >
-        {state.collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+        {effectiveCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
       </button>
 
       {/* Scrollable tree area */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-1.5 pb-2 sidebar-scroll">
         {/* Favorites section */}
-        {!state.collapsed && favoritePages.length > 0 && (
+        {!effectiveCollapsed && favoritePages.length > 0 && (
           <SidebarSectionWithAction
             name="Favorites"
             expanded={!!state.expandedSections.Favorites}
@@ -295,7 +302,7 @@ export function Sidebar({
               onClick={() => onCreatePage(null, activeWorkspaceId)}
               className="w-full text-left px-2 py-1.5 text-sm text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-md transition-colors"
             >
-              {state.collapsed ? '' : '+ New page'}
+              {effectiveCollapsed ? '' : '+ New page'}
             </button>
           ) : (
             rootPages.map((page) => (
@@ -333,7 +340,7 @@ export function Sidebar({
         </SidebarSectionWithAction>
 
         {/* Recent section */}
-        {!state.collapsed && recentPages.length > 0 && (
+        {!effectiveCollapsed && recentPages.length > 0 && (
           <SidebarSectionWithAction
             name="Recent"
             expanded={state.expandedSections.Recent ?? true}
@@ -366,10 +373,10 @@ export function Sidebar({
       </div>
 
       {/* Footer */}
-      <SidebarFooter collapsed={state.collapsed} theme={state.theme} onThemeChange={setTheme} />
+      <SidebarFooter collapsed={effectiveCollapsed} theme={state.theme} onThemeChange={setTheme} />
 
       {/* Resize handle */}
-      {!state.collapsed && (
+      {!effectiveCollapsed && (
         <ResizeHandle width={state.width} onResize={setWidth} onToggleCollapse={toggleCollapsed} />
       )}
 
@@ -429,9 +436,32 @@ export function Sidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <div className="hidden md:flex shrink-0 border-r border-stone-200/60 dark:border-stone-700/60">
-        {sidebarContent}
-      </div>
+      {state.collapsed ? (
+        <div
+          className="hidden md:block shrink-0"
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        >
+          <button
+            onClick={() => { setCollapsed(false); setHovered(false); }}
+            className="p-2 m-1 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            title="Open sidebar"
+          >
+            <Menu className="w-5 h-5 text-stone-600 dark:text-stone-400" />
+          </button>
+          <div
+            className={`fixed top-0 left-0 bottom-0 z-40 shadow-2xl transition-transform duration-200 ${
+              hovered ? 'translate-x-0' : '-translate-x-full'
+            }`}
+          >
+            {sidebarContent}
+          </div>
+        </div>
+      ) : (
+        <div className="hidden md:flex shrink-0 border-r border-stone-200/60 dark:border-stone-700/60">
+          {sidebarContent}
+        </div>
+      )}
 
       {/* Mobile: hamburger + drawer */}
       <div className="md:hidden">
