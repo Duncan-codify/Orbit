@@ -46,7 +46,7 @@ export function DatabaseEngine() {
       </div>
 
       {openRecordId && (
-        <RecordModal recordId={openRecordId} onClose={() => setOpenRecordId(null)} />
+        <RecordModal key={openRecordId} recordId={openRecordId} onClose={() => setOpenRecordId(null)} />
       )}
     </div>
   );

@@ -18,6 +18,11 @@ export function RecordModal({
   onClose: () => void;
 }) {
   const { data, setValue, removeRecord } = useDatabase();
+  const [titleInput, setTitleInput] = useState(() => {
+    const primaryProperty = data?.properties.find((property) => property.is_primary) || data?.properties[0];
+    const value = data?.values.find((item) => item.record_id === recordId && item.property_id === primaryProperty?.id)?.value;
+    return value == null ? '' : String(value);
+  });
   const [activeTab, setActiveTab] = useState<'properties' | 'comments' | 'activity'>('properties');
   const [commentInput, setCommentInput] = useState('');
   const [comments, setComments] = useState<{ id: string; text: string; time: string }[]>([]);
@@ -27,7 +32,6 @@ export function RecordModal({
   if (!record) return null;
 
   const primaryProp = data.properties.find((p) => p.is_primary) || data.properties[0];
-  const primaryValue = data.values.find((v) => v.record_id === recordId && v.property_id === primaryProp?.id)?.value;
 
   const orderedProps = [...data.properties].sort((a, b) => a.position - b.position);
 
@@ -65,8 +69,11 @@ export function RecordModal({
         <div className="px-8 pt-6 pb-4">
           <input
             type="text"
-            value={primaryValue ? String(primaryValue) : ''}
-            onChange={(e) => setValue(recordId, primaryProp.id, e.target.value)}
+            value={titleInput}
+            onChange={(e) => {
+              setTitleInput(e.target.value);
+              setValue(recordId, primaryProp.id, e.target.value);
+            }}
             placeholder="Untitled"
             className="text-3xl font-bold text-stone-900 dark:text-stone-100 w-full bg-transparent outline-none placeholder-stone-300 dark:placeholder-stone-600"
           />
