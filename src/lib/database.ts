@@ -56,7 +56,8 @@ export type ViewType =
   | 'gantt'
   | 'spreadsheet'
   | 'tree'
-  | 'pivot';
+  | 'pivot'
+  | 'habit';
 
 export interface Database {
   id: string;
@@ -228,6 +229,7 @@ export const VIEW_TYPES: { type: ViewType; label: string; icon: string; descript
   { type: 'spreadsheet', label: 'Spreadsheet', icon: '▦', description: 'Raw spreadsheet' },
   { type: 'tree', label: 'Tree', icon: '⌅', description: 'Hierarchical tree' },
   { type: 'pivot', label: 'Pivot', icon: '⊞', description: 'Pivot table' },
+  { type: 'habit', label: 'Habits', icon: '✅', description: 'Habit tracker with streaks and heatmaps' },
 ];
 
 export const OPTION_COLORS = [
@@ -419,6 +421,56 @@ export async function deleteValue(recordId: string, propertyId: string): Promise
 }
 
 // ==================== HELPERS ====================
+
+// ==================== HABIT CHECK-INS ====================
+
+export interface HabitCheckIn {
+  id: string;
+  record_id: string;
+  check_date: string;
+  completed: boolean;
+  mood: string | null;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function fetchCheckIns(recordId: string): Promise<HabitCheckIn[]> {
+  const { data, error } = await supabase
+    .from('habit_checkins')
+    .select('*')
+    .eq('record_id', recordId)
+    .order('check_date', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function upsertCheckIn(
+  recordId: string,
+  checkDate: string,
+  completed: boolean,
+  mood?: string | null,
+  note?: string | null
+): Promise<HabitCheckIn | null> {
+  const { data, error } = await supabase
+    .from('habit_checkins')
+    .upsert(
+      { record_id: recordId, check_date: checkDate, completed, mood, note },
+      { onConflict: 'record_id,check_date' }
+    )
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteCheckIn(recordId: string, checkDate: string): Promise<void> {
+  await supabase
+    .from('habit_checkins')
+    .delete()
+    .eq('record_id', recordId)
+    .eq('check_date', checkDate);
+}
 
 export function getRecordValues(
   recordId: string,

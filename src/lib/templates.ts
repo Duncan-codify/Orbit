@@ -180,9 +180,9 @@ export const TEMPLATES: Template[] = [
           { name: 'Progress', type: 'progress' },
         ],
         views: [
-          { name: 'All Habits', type: 'table', isDefault: true },
+          { name: 'Tracker', type: 'habit', isDefault: true },
+          { name: 'All Habits', type: 'table' },
           { name: 'By Category', type: 'board', groupByProperty: 'Category' },
-          { name: 'Gallery', type: 'gallery' },
         ],
         records: [
           { values: { Habit: 'Drink 8 glasses of water', Category: 'Health', Frequency: 'Daily', 'Done Today': true, Streak: 12, 'Target Streak': 30, Progress: 40 } },

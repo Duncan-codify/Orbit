@@ -6,6 +6,7 @@ import { BoardView } from './BoardView';
 import { GalleryView } from './GalleryView';
 import { ListView } from './ListView';
 import { CalendarView } from './CalendarView';
+import { HabitTrackerView } from './HabitTrackerView';
 import { RecordModal } from './RecordModal';
 
 export function DatabaseEngine() {
@@ -43,6 +44,8 @@ export function DatabaseEngine() {
           <ListView view={activeView} onOpenRecord={setOpenRecordId} />
         ) : activeView.type === 'calendar' ? (
           <CalendarView view={activeView} onOpenRecord={setOpenRecordId} />
+        ) : activeView.type === 'habit' ? (
+          <HabitTrackerView view={activeView} onOpenRecord={setOpenRecordId} />
         ) : (
           <ComingSoonView type={activeView.type} />
         )}
