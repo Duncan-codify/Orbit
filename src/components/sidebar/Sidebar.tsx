@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { PanelLeftClose, PanelLeftOpen, Plus, Menu } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Plus, Menu, Home } from 'lucide-react';
 import type { Block, Workspace } from '../../lib/supabase';
 import { useSidebarStore } from './useSidebarStore';
 import { applyTheme } from './ThemeToggle';
@@ -18,7 +18,7 @@ interface SidebarProps {
   activeWorkspaceId: string;
   activePageId: string | null;
   onSwitchWorkspace: (id: string) => void;
-  onSelectPage: (id: string) => void;
+  onSelectPage: (id: string | null) => void;
   onCreatePage: (parentId: string | null, workspaceId?: string) => Promise<string>;
   onUpdateBlock: (id: string, updates: Partial<Block>) => Promise<void>;
   onDeleteBlock: (id: string) => Promise<void>;
@@ -231,6 +231,22 @@ export function Sidebar({
         onSelect={onSwitchWorkspace}
         collapsed={effectiveCollapsed}
       />
+
+      {/* Home / Dashboard button */}
+      <div className="px-2 pt-1.5 pb-0.5">
+        <button
+          onClick={() => onSelectPage(null)}
+          className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors ${
+            !activePageId
+              ? 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-medium'
+              : 'text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+          }`}
+          title="Dashboard"
+        >
+          <Home className="w-4 h-4 shrink-0" />
+          {!effectiveCollapsed && <span className="text-sm">Home</span>}
+        </button>
+      </div>
 
       {/* Search */}
       <SearchBar

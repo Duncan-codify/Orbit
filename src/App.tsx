@@ -24,6 +24,7 @@ import {
 import { supabase, type Block, type Workspace } from './lib/supabase';
 import { DatabaseBlock } from './components/database/DatabaseBlock';
 import { Sidebar as NewSidebar } from './components/sidebar/Sidebar';
+import { Dashboard } from './components/Dashboard';
 
 // ==================== TYPES ====================
 
@@ -150,16 +151,8 @@ function AppProvider({ children }: { children: ReactNode }) {
           const wsId = workspacesData[0].id;
           setActiveWorkspaceId(activeWorkspaceId || wsId);
 
-          // Find first page in this workspace
-          const ws = workspacesData.find((w) => w.id === (activeWorkspaceId || wsId));
-          if (ws) {
-            const pageBlocks = blocksData.filter(
-              (b) => b.type === 'page' && b.parent_id === null
-            );
-            if (!activePageId && pageBlocks.length > 0) {
-              setActivePageId(pageBlocks[0].id);
-            }
-          }
+          // Keep activePageId null on initial load so the Dashboard shows first.
+          // User navigates to pages from the sidebar.
         }
       }
     } catch (error) {
@@ -175,12 +168,7 @@ function AppProvider({ children }: { children: ReactNode }) {
 
   const setActiveWorkspace = (id: string) => {
     setActiveWorkspaceId(id);
-    const pageBlocks = Object.values(blocks).filter(
-      (b) => b.type === 'page' && b.parent_id === null
-    );
-    if (pageBlocks.length > 0) {
-      setActivePageId(pageBlocks[0].id);
-    }
+    setActivePageId(null);
   };
 
   const setActivePage = (id: string | null) => {
@@ -1059,7 +1047,7 @@ function Breadcrumbs() {
 // ==================== MAIN VIEWPORT ====================
 
 function MainViewport() {
-  const { blocks, activePageId, createPage, activeWorkspaceId, loading } = useApp();
+  const { blocks, activePageId, createPage, activeWorkspaceId, workspaces, updateBlock, refetch, loading, setActivePage } = useApp();
 
   if (loading) {
     return (
@@ -1073,21 +1061,15 @@ function MainViewport() {
 
   if (!activePage) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-stone-50 dark:bg-stone-900">
-        <div className="text-center">
-          <FileText className="w-16 h-16 text-stone-300 dark:text-stone-700 mx-auto mb-4" />
-          <h2 className="text-xl font-medium text-stone-400 dark:text-stone-500">No page selected</h2>
-          <p className="text-stone-400 dark:text-stone-500 mt-2">Select a page from the sidebar or create a new one</p>
-          <button
-            onClick={async () => {
-              await createPage(null, activeWorkspaceId);
-            }}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Create Page
-          </button>
-        </div>
-      </div>
+      <Dashboard
+        blocks={blocks}
+        activeWorkspaceId={activeWorkspaceId}
+        workspaces={workspaces}
+        onCreatePage={createPage}
+        onUpdateBlock={updateBlock}
+        onSelectPage={setActivePage}
+        onRefetch={refetch}
+      />
     );
   }
 
