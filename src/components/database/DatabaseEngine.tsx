@@ -5,6 +5,7 @@ import { TableView } from './TableView';
 import { BoardView } from './BoardView';
 import { GalleryView } from './GalleryView';
 import { ListView } from './ListView';
+import { CalendarView } from './CalendarView';
 import { RecordModal } from './RecordModal';
 
 export function DatabaseEngine() {
@@ -40,6 +41,8 @@ export function DatabaseEngine() {
           <GalleryView view={activeView} onOpenRecord={setOpenRecordId} />
         ) : activeView.type === 'list' ? (
           <ListView view={activeView} onOpenRecord={setOpenRecordId} />
+        ) : activeView.type === 'calendar' ? (
+          <CalendarView view={activeView} onOpenRecord={setOpenRecordId} />
         ) : (
           <ComingSoonView type={activeView.type} />
         )}
